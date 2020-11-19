@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "rtmp_recv_node");
     auto n = ros::NodeHandle();
     std::string URL = "";
-    n.getParam("url", URL );
+    URL = std::string(argv[1]);
 
     ROS_INFO("Got the URL: %s", URL.c_str() );
     
