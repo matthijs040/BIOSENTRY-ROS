@@ -7,14 +7,14 @@
             },
             "includePath": [
                 "/opt/ros/noetic/include/**",
-                "/home/matthijs/catkin_ws/src/biosentry/include/**",
-                "/usr/include/**"
+                "/usr/include/**",
+                "/opt/ros/noetic/include"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",
-            "cStandard": "gnu17",
-            "cppStandard": "gnu++14"
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
     "version": 4
