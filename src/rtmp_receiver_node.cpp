@@ -34,5 +34,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    ROS_ERROR("Got no URL to get data from. Stopping.");
+
     return 0;
 }
