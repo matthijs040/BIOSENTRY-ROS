@@ -1,0 +1,16 @@
+<launch>
+
+    <node name = "rtmp_node" pkg = "biosentry" type = "biosentry_rtmp_receiver_node"
+        args = "rtmp://matthijs-MS-7A38/LiveApp/250110064316771014427498" />
+
+
+    <node name = "detector_node" pkg="biosentry" type="biosentry_dnn_detector_node"
+        args=  
+        "   /home/matthijs/Workspaces/catkin_ws/src/biosentry/resources/dnn/opencv_face_detector_uint8.pb  
+            /home/matthijs/Workspaces/catkin_ws/src/biosentry/resources/dnn/opencv_face_detector.pbtxt
+            data detection_out
+            /biosentry/image_raw 
+            /biosentry/image_overlaid
+            0.0"
+    />
+</launch>

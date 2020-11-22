@@ -14,7 +14,7 @@
 
 
 DNNDetector* detector;
-float tolerance = 0.7;
+float tolerance = 0.95;
 cv::Size* newsize;
 
 /**
@@ -47,21 +47,24 @@ void setTolerance(std_msgs::Float32 msg)
 }
 
 
-sensor_msgs::Image detectFaces( sensor_msgs::ImageConstPtr image_message )
+sensor_msgs::Image detectFaces( sensor_msgs::ImageConstPtr input )
 {
-    auto input_image_wrapper = cv_bridge::toCvShare(image_message, "bgr8");
-    auto input_image = input_image_wrapper->image;
+    auto wrapper = cv_bridge::toCvShare(input, "bgr8");
+    auto image = wrapper->image;
 
     if( newsize && !newsize->empty() )
     {
-        cv::resize(input_image, input_image, *newsize);
+        cv::resize(image, image, *newsize);
     }
 
-    std::vector<cv::Rect> faces = detector->getDetectedFaces( input_image, tolerance );
+    std::vector<cv::Rect> faces = detector->getDetectedFaces(image, tolerance );
 
-    detector->overlayDetectedFaces(input_image, faces );
+    detector->overlayDetectedFaces(image, faces );
 
-    return 
+    sensor_msgs::Image out;
+    wrapper->toImageMsg(out);
+
+    return out;
 }
 
 int main(int argc, char *argv[])
@@ -69,7 +72,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "image_detector_node");
     std::cout << std::string(argv[0]) << "\n";
 
-    if(argc != 7 )
+    if(argc != 8 )
     {
         std::cerr << "Please provide a filepath to a model and config file.\n"; // 1, 2
         std::cerr << "Also provide the names of the input and output layers of the DNN. (specified in the config file.)\n";
@@ -86,7 +89,7 @@ int main(int argc, char *argv[])
     auto output_layer_name =  std::string(argv[4]);
 
     DNNDetector det = DNNDetector( model_file, config_file ,input_layer_name ,output_layer_name  );
-    SubscriptionPublisher<sensor_msgs::Image, sensor_msgs::ImageConstPtr> subpub(argv[5], argv[6], detectFaces);
+    SubscriptionPublisher<sensor_msgs::ImageConstPtr, sensor_msgs::Image> subpub(argv[5], argv[6], detectFaces);
 
     detector = &det;
 
@@ -99,14 +102,14 @@ int main(int argc, char *argv[])
     ros::Subscriber sizesub = n.subscribe("biosentry/detector_resolution", 1, setResolution);
 
     // frequency 0 means respond as fast to callbacks as you can. 
-    double frequency = std::stod( std::string( argv[6] ) );
+    double frequency = std::stod( std::string( argv[7] ) );
     if(frequency == 0.0)
     {
         ros::spin();
     }
 
     //Sleep for the remainder of free time within the assigned frequency.
-    ros::Rate rate( std::stod( std::string( argv[6] ) ) );
+    ros::Rate rate( frequency );
     while(ros::ok())
     {
         ros::spinOnce();

@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
 
   message_generation
 )
-
 FIND_PACKAGE( OpenCV REQUIRED )
 
 ## System dependencies are found with CMake's conventions
@@ -113,7 +112,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES biosentry
   CATKIN_DEPENDS message_runtime roscpp rospy std_msgs
-  DEPENDS system_lib
+  # DEPENDS system_lib
 )
 
 
@@ -145,13 +144,14 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(       ${PROJECT_NAME}_rtmp_recv_node src/rtmp_recv_node.cpp)
-target_link_libraries(${PROJECT_NAME}_rtmp_recv_node ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_executable(       ${PROJECT_NAME}_rtmp_receiver_node src/rtmp_receiver_node.cpp)
+target_link_libraries(${PROJECT_NAME}_rtmp_receiver_node ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
 
+add_executable(       ${PROJECT_NAME}_dnn_detector_node src/dnn_detector_node.cpp)
+target_link_libraries(${PROJECT_NAME}_dnn_detector_node ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
 
-
-
-
+add_executable(       ${PROJECT_NAME}_image_publisher_node src/image_publisher_node.cpp)
+target_link_libraries(${PROJECT_NAME}_image_publisher_node ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
 
 
 ## Rename C++ executable without prefix

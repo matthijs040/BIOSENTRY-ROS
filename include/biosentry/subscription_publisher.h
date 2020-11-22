@@ -5,7 +5,7 @@
 #include <functional>
 #include <string>
 
-template<typename pubtype, typename subtype>
+template<typename subtype, typename pubtype>
 class SubscriptionPublisher
 {
 

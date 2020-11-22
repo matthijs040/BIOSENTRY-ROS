@@ -8,8 +8,17 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/../../devel/lib/biosentry/biosentry_rtmp_recv_node",
-            "args": ["rtmp://DESKTOP-Matthijs/LiveApp/731714766396276612760691"],
+
+
+            // "program": "${workspaceFolder}/../../devel/lib/biosentry/biosentry_rtmp_recv_node",
+            // "args": ["rtmp://matthijs-MS-7A38/LiveApp/250110064316771014427498"],
+            "program": "${workspaceFolder}/../../devel/lib/biosentry/biosentry_dnn_detector_node",
+            "args": ["${workspaceFolder}/resources/opencv_face_detector.caffemodel", "${workspaceFolder}/resources/deploy.prototxt",
+                     "data", "detection_out",
+                     "/biosentry/image_raw",  "/biosentry/image_overlaid",
+                     "0.0"],
+            
+            
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
