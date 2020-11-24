@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
     if(argc != 8 )
     {
-        std::cerr << "Please provide a filepath to a model and config file.\n"; // 1, 2
+        std::cerr << "Please provide a filepath to a model and config file.\n";
         std::cerr << "Also provide the names of the input and output layers of the DNN. (specified in the config file.)\n";
         std::cerr << "Also provide an input and output topic for video and movement response respectively.\n";
         std::cerr << "Also provide a frequency at which the node is throttled. Provide 0 to run at input topic's frequency.\n";
@@ -116,6 +116,5 @@ int main(int argc, char *argv[])
         rate.sleep();
     }
     
-
     return 0;
 }
