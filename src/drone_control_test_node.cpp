@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
             // Calculate and send new command.
             auto pub_msg = controller.updatePath(latestOdom);
             vel_pub.publish(pub_msg);
-            std::cout << "linear: x: " << pub_msg.linear.x << "y: " << pub_msg.linear.y << "z: " << pub_msg.linear.z << "angular z: " << pub_msg.angular.z << "\n"; 
+            std::cout << "lin: X: " << pub_msg.linear.x << " Y: " << pub_msg.linear.y << " Z: " << pub_msg.linear.z << " | ang Z: " << pub_msg.angular.z << "\n"; 
         }
         rate.sleep();
     }

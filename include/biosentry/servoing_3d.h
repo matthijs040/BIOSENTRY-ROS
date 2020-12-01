@@ -88,9 +88,9 @@ class Servoing
              const double cX = position.x,  cY = position.y,  cZ = position.z,
                           gX = goal.x,      gY = goal.y,      gZ = goal.z;
 
-            if(  isWithin(cX, gX, 0.01)
-              && isWithin(cY, gY, 0.01)
-              && isWithin(cZ, gZ, 0.01) )
+            if(  isWithin(cX, gX, 0.1)
+              && isWithin(cY, gY, 0.1)
+              && isWithin(cZ, gZ, 0.1) )
             {
                 linFinished = true;
                 ROS_DEBUG("linear motion finished.");
