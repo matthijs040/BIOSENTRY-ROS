@@ -9,8 +9,6 @@ int main(int argc, char *argv[])
     // https://developer.dji.com/api-reference/android-api/Components/FlightController/DJIFlightController.html#djiflightcontroller_virtualstickcontrolmodecategory_sendvirtualstickflightcontroldata_inline
     auto controlRate = ros::Rate(25);
 
-    
-
 
     return 0;
 }
