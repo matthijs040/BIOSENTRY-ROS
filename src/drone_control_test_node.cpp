@@ -7,6 +7,8 @@
 #include "../../../devel/include/biosentry/AircraftFlightActions.h"
 #include "../include/biosentry/servoing_3d.h"
 
+#define GOAL_HEIGHT 5
+
 bool isWithin(double val, double setPoint, double range)
 {
     return (val < setPoint + range && val > setPoint - range);
@@ -55,26 +57,29 @@ int main(int argc, char *argv[])
     
     auto init_pos = initialOdom.pose.pose.position;
     auto goal =  geometry_msgs::Point(init_pos);
-    goal.z += 5;
+    goal.z += GOAL_HEIGHT;
     auto controller = Servoing(goal);
     
     while(ros::ok())
     {
         // Has an initial location. App / Drone is online and communicating to ROS.
+        auto old_msg = geometry_msgs::Twist();
         if(initialMessage && initialOdom.pose.pose.position.x != 0.0)
         {
             // If controller has reached goal.
             if(controller.angFinished && controller.linFinished)
             {
                 // If it is the higher vertical goal.
-                if(controller.goal.z == 3)
+                if(controller.goal.z == GOAL_HEIGHT)
                 {
                     goal.z -= 2;
+                    //goal.x -= 2;
                     controller.setGoal(goal);
                 }
                 else // If it is the lower goal.
                 {
                     goal.z += 2;
+                    //goal.x += 2;
                     controller.setGoal(goal);
                 }
             }
@@ -82,7 +87,12 @@ int main(int argc, char *argv[])
             // Calculate and send new command.
             auto pub_msg = controller.updatePath(latestOdom);
             vel_pub.publish(pub_msg);
-            std::cout << "lin: X: " << pub_msg.linear.x << " Y: " << pub_msg.linear.y << " Z: " << pub_msg.linear.z << " | ang Z: " << pub_msg.angular.z << "\n"; 
+            if(pub_msg != old_msg)
+            {
+                old_msg = pub_msg;
+                std::cout << "lin: X: " << pub_msg.linear.x << " Y: " << pub_msg.linear.y << " Z: " << pub_msg.linear.z << " | ang Z: " << pub_msg.angular.z << "\n"; 
+            }
+            
         }
         rate.sleep();
     }
