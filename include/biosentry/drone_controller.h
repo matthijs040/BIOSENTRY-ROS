@@ -13,6 +13,7 @@ private:
     ros::Publisher command_publisher;
     ros::Publisher control_publisher;
     ros::Subscriber odometry_subscriber;
+    
 
     void odometryCallback(const nav_msgs::Odometry::ConstPtr&)
     {
@@ -20,6 +21,9 @@ private:
     }
 
 public:
+
+    bool motorsOn = false;
+
     DroneController( ros::NodeHandle nodeHandle
                    , std::string commandTopic
                    , std::string controlTopic 
@@ -34,12 +38,14 @@ public:
     {
         auto msg = biosentry::AircraftFlightActions(); msg.flightActions = 0;
         command_publisher.publish( msg );
+        motorsOn = true;
     }
 
     void SendDisableMotors()
     {
         auto msg = biosentry::AircraftFlightActions(); msg.flightActions = 1;
         command_publisher.publish( msg );
+        motorsOn = false;
     }
 
     /**

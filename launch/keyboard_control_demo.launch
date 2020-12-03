@@ -1,0 +1,9 @@
+<launch>
+    <node name = "bridge_server" pkg = "rosbridge_server" type = "rosbridge_websocket"/>
+
+    <node name = "controller_node" pkg = "biosentry" type = "biosentry_keyboard_controller_node" 
+    args = "/android/drone/biosentry/AircraftFlightActions
+            /android/drone/geometry_msgs/Twist
+            /android/drone/odom"/>
+
+</launch>

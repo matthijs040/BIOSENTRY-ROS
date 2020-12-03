@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "keyboard_controller_node");
     auto n = ros::NodeHandle();
 
-    auto rate = ros::Rate(60);
+    auto rate = ros::Rate(24);
 
     if(argc != 4)
     {
@@ -54,10 +54,12 @@ int main(int argc, char *argv[])
     while(ros::ok())
     {
         auto length = read(STDIN_FILENO, buff, sizeof(buff));
+        bool sentCommand = false;
         if(length > 0 )
         {
             auto c = buff[0];
             //std::cout << "character is: " << c << '\n';
+
             switch (c)
             {
             case 'Z':
@@ -66,38 +68,52 @@ int main(int argc, char *argv[])
             case 'X':
                 controller.SendDisableMotors();
                 break;
-            case 'r':
-                controller.sendControl(0,0,1,0);
-                break;
-            case 'f':
-                controller.sendControl(0,0,-1,0);
-                break;
-            case 'w':
-                controller.sendControl(1,0,0,0);
-                break;
-            case 's':
-                controller.sendControl(-1,0,0,0);
-                break;
-            case 'a':
-                controller.sendControl(0,1,0,0);
-                break;
-            case 'd':
-                controller.sendControl(0,-1,0,0);
-                break;
-            case 'q':
-                controller.sendControl(0,0,0,30);
-                break;
-            case 'e':
-                controller.sendControl(0,0,0,-30);
-                break;
+            
             case '.':
                 ROS_INFO("Exit character received. Stopping...");
-                ros::shutdown();
-                break;
-            default:
-                ROS_WARN("Unknown input character: %c", c);
-                break;
+                ros::shutdown(); // sets ros::ok() to false.
+            break;
+                default:
+                if(controller.motorsOn)
+                {
+                    sentCommand = true;
+                    switch (c)
+                    {     
+                        case 'r':
+                            controller.sendControl(0,0,1,0);
+                            break;
+                        case 'f':
+                            controller.sendControl(0,0,-1,0);
+                            break;
+                        case 'w':
+                            controller.sendControl(1,0,0,0);
+                            break;
+                        case 's':
+                            controller.sendControl(-1,0,0,0);
+                            break;
+                        case 'a':
+                            controller.sendControl(0,1,0,0);
+                            break;
+                        case 'd':
+                            controller.sendControl(0,-1,0,0);
+                            break;
+                        case 'q':
+                            controller.sendControl(0,0,0,30);
+                            break;
+                        case 'e':
+                            controller.sendControl(0,0,0,-30);
+                            break;
+                        default:
+                            ROS_WARN("Unknown input character: %c", c);
+                            sentCommand = false;
+                    }
+                }
             }
+        }
+
+        if(controller.motorsOn && !sentCommand)
+        {
+            //controller.sendControl(0,0,0,0);
         }
 
         rate.sleep();
