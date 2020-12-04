@@ -8,7 +8,6 @@
             "includePath": [
                 "/opt/ros/noetic/include/**",
                 "/usr/include/**",
-                "/opt/ros/noetic/include",
                 "${workspaceFolder}/../../devel/include/**"
             ],
             "name": "ROS",

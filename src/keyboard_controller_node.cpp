@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "keyboard_controller_node");
     auto n = ros::NodeHandle();
 
-    auto rate = ros::Rate(24);
+    auto rate = ros::Rate(30);
 
     if(argc != 4)
     {
@@ -54,19 +54,16 @@ int main(int argc, char *argv[])
     while(ros::ok())
     {
         auto length = read(STDIN_FILENO, buff, sizeof(buff));
-        bool sentCommand = false;
         if(length > 0 )
         {
-            auto c = buff[0];
-            //std::cout << "character is: " << c << '\n';
-
+            char c = buff[0];
             switch (c)
             {
             case 'Z':
-                controller.SendEnableMotors();
+                controller.sendControlCommand(CONTROL_COMMAND::TAKEOFF_START);
                 break;
             case 'X':
-                controller.SendDisableMotors();
+                controller.sendControlCommand(CONTROL_COMMAND::LANDING_START);
                 break;
             
             case '.':
@@ -76,46 +73,39 @@ int main(int argc, char *argv[])
                 default:
                 if(controller.motorsOn)
                 {
-                    sentCommand = true;
                     switch (c)
                     {     
                         case 'r':
-                            controller.sendControl(0,0,1,0);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::UPWARDS);
                             break;
                         case 'f':
-                            controller.sendControl(0,0,-1,0);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::DOWNWARDS);
                             break;
                         case 'w':
-                            controller.sendControl(1,0,0,0);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::FORWARDS);
                             break;
                         case 's':
-                            controller.sendControl(-1,0,0,0);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::BACKWARDS);
                             break;
                         case 'a':
-                            controller.sendControl(0,1,0,0);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::YAW_LEFT);
                             break;
                         case 'd':
-                            controller.sendControl(0,-1,0,0);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::YAW_RIGHT);
                             break;
                         case 'q':
-                            controller.sendControl(0,0,0,30);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::ROT_LEFT);
                             break;
                         case 'e':
-                            controller.sendControl(0,0,0,-30);
+                            controller.sendFlightCommand(FLIGHT_COMMAND::ROT_RIGHT);
                             break;
                         default:
                             ROS_WARN("Unknown input character: %c", c);
-                            sentCommand = false;
                     }
                 }
             }
         }
-
-        if(controller.motorsOn && !sentCommand)
-        {
-            //controller.sendControl(0,0,0,0);
-        }
-
+        controller.publishLatestSpeed();
         rate.sleep();
     }
 
