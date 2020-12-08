@@ -71,7 +71,8 @@ int main(int argc, char *argv[])
                 ros::shutdown(); // sets ros::ok() to false.
             break;
                 default:
-                if(controller.motorsOn)
+                if( controller.getState() == CONTROLLER_STATE::ACTIVE ||
+                    controller.getState() == CONTROLLER_STATE::FLYING )
                 {
                     switch (c)
                     {     
