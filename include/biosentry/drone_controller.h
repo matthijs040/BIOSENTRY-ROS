@@ -137,6 +137,8 @@ private:
         currTwist.linear.z += dz_l * p_factor;
 
         currTwist.angular.z += dz_r * p_factor;
+
+        //ROS_INFO("latest twist is: %f %f %f \n", currTwist.linear.x, currTwist.linear.y , currTwist.linear.z   );
     }
 
 public:
@@ -188,6 +190,8 @@ public:
      */
     void sendControlCommand(CONTROL_COMMAND command)
     {
+        // std::cout << "received the command enum: " << static_cast<typename std::underlying_type<CONTROL_COMMAND>::type>(command) << "\n";
+        // std::cout << "current state: " << static_cast<typename std::underlying_type<CONTROLLER_STATE>::type>(current_state) << '\n';
         if( command == CONTROL_COMMAND::TAKEOFF_START || 
             command == CONTROL_COMMAND::TAKEOFF_PRECISION_START )
         {
@@ -202,7 +206,11 @@ public:
         if( command == CONTROL_COMMAND::MOTORS_ON )
         {
             if(current_state == CONTROLLER_STATE::IDLE)
+            {
                 current_state = CONTROLLER_STATE::ACTIVE;
+                ROS_INFO("current state set to active");
+            }
+
         }
 
         auto msg = biosentry::AircraftFlightActions();
@@ -217,9 +225,10 @@ public:
      */
     void sendFlightCommand(FLIGHT_COMMAND command)
     {
-        if( current_state != CONTROLLER_STATE::ACTIVE || 
+        if( current_state != CONTROLLER_STATE::ACTIVE && 
             current_state != CONTROLLER_STATE::FLYING )
         {
+            ROS_WARN("denied flight command as drone is not active.");
             return;
         }
 

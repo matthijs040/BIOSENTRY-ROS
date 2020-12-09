@@ -39,7 +39,8 @@ int main(int argc, char *argv[])
     auto controller = DroneController(n, argv[1], argv[2], argv[3]);
     
     ROS_INFO(   "Hold down character. \n \
-    Z for motors on, X for motors off \n \
+    Z for take_off, X for landing \n \
+    M for motors on, N for motors off \n \
     r for up, f for down \n \
     w for forward, s for backward \n \
     a for yaw-left, d for yaw-right \n \
@@ -59,6 +60,13 @@ int main(int argc, char *argv[])
             char c = buff[0];
             switch (c)
             {
+            case 'N':
+                controller.sendControlCommand(CONTROL_COMMAND::MOTORS_OFF);
+                break;
+            case 'M':
+                controller.sendControlCommand(CONTROL_COMMAND::MOTORS_ON);
+                break;
+
             case 'Z':
                 controller.sendControlCommand(CONTROL_COMMAND::TAKEOFF_START);
                 break;
@@ -71,34 +79,42 @@ int main(int argc, char *argv[])
                 ros::shutdown(); // sets ros::ok() to false.
             break;
                 default:
-                if( controller.getState() == CONTROLLER_STATE::ACTIVE ||
-                    controller.getState() == CONTROLLER_STATE::FLYING )
+                //if( controller.getState() == CONTROLLER_STATE::ACTIVE ||
+                //    controller.getState() == CONTROLLER_STATE::FLYING )
                 {
                     switch (c)
                     {     
                         case 'r':
                             controller.sendFlightCommand(FLIGHT_COMMAND::UPWARDS);
+                            //controller.sendControl(0,0,2,0);
                             break;
                         case 'f':
                             controller.sendFlightCommand(FLIGHT_COMMAND::DOWNWARDS);
+                            //controller.sendControl(0,0,-2,0);
                             break;
                         case 'w':
                             controller.sendFlightCommand(FLIGHT_COMMAND::FORWARDS);
+                            //controller.sendControl(1,0,0,0);
                             break;
                         case 's':
                             controller.sendFlightCommand(FLIGHT_COMMAND::BACKWARDS);
+                            //controller.sendControl(-1,0,0,0);
                             break;
                         case 'a':
                             controller.sendFlightCommand(FLIGHT_COMMAND::YAW_LEFT);
+                            //controller.sendControl(0,1,0,0);
                             break;
                         case 'd':
                             controller.sendFlightCommand(FLIGHT_COMMAND::YAW_RIGHT);
+                            //controller.sendControl(0,-1,0,0);
                             break;
                         case 'q':
                             controller.sendFlightCommand(FLIGHT_COMMAND::ROT_LEFT);
+                            //controller.sendControl(0,0,0,30);
                             break;
                         case 'e':
                             controller.sendFlightCommand(FLIGHT_COMMAND::ROT_RIGHT);
+                            //controller.sendControl(0,0,0,-30);
                             break;
                         default:
                             ROS_WARN("Unknown input character: %c", c);
@@ -107,6 +123,7 @@ int main(int argc, char *argv[])
             }
         }
         controller.publishLatestSpeed();
+        ros::spinOnce();
         rate.sleep();
     }
 

@@ -1,0 +1,15 @@
+<launch>
+
+    <node name = "sim_controller_node" pkg = "biosentry" type = "biosentry_gazebo_controller_node" 
+    args = "robot
+            /gazebo/model_states
+            /biosentry/geometry_msgs/Twist
+            /biosentry/set_model_state
+            /biosentry/odom" />
+
+    <node name = "controller_node" pkg = "biosentry" type = "biosentry_keyboard_controller_node" 
+    args = "/biosentry/AircraftFlightActions
+            /biosentry/geometry_msgs/Twist
+            /biosentry/odom"/>
+
+</launch>
