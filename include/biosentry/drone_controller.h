@@ -126,7 +126,12 @@ private:
         }
     }
 
-    double throttle(double& val, double& oldVal)
+    /**
+     * @brief returns 0 to throttle acceleration and resets val to oldval.
+     * used to reset goal speed to current speed while throttled.
+     * @return double 
+     */
+    inline double throttle(double& val, double& oldVal)
     {
         val = oldVal;
         return 0;
@@ -143,34 +148,26 @@ private:
         auto newTwist = msg->twist.twist;
         
         auto dx_l = goalTwist.linear.x - newTwist.linear.x;
-
-        dx_l = ( ( fabs( ( currTwist.linear.x + (dx_l * p_factor) ) ) > linearMaximum) ? 
-                    throttle(goalTwist.linear.x, newTwist.linear.x) : 
-                    dx_l );
+        dx_l = ( fabs( ( currTwist.linear.x + (dx_l * p_factor) ) ) > linearMaximum) 
+            ? throttle(goalTwist.linear.x, newTwist.linear.x) 
+            : dx_l;
 
         auto dy_l = goalTwist.linear.y - newTwist.linear.y;
-        if(fabs( ( currTwist.linear.y + (dy_l * p_factor) ) ) > linearMaximum)
-        {
-            ROS_WARN("hit Y max. Throttling");
-            dy_l = 0;
-            goalTwist.linear.y = newTwist.linear.y;
-        }
-
-
-        dy_l = ( ( fabs( ( currTwist.linear.y + (dy_l * p_factor) ) ) > linearMaximum) ? 0 : dy_l );
+        dy_l = ( fabs( ( currTwist.linear.y + (dy_l * p_factor) ) ) > linearMaximum) 
+                ? throttle(goalTwist.linear.y, newTwist.linear.y) 
+                : dy_l;
 
         auto dz_l = goalTwist.linear.z - newTwist.linear.z;
-        if(fabs( ( currTwist.linear.z + (dz_l * p_factor) ) ) > linearMaximum )
-            ROS_WARN("hit Z max. Throttling");
-
-        dz_l = ( ( fabs( ( currTwist.linear.z + (dz_l * p_factor) ) )  > linearMaximum) ? 0 : dz_l);
+        dz_l = ( fabs( ( currTwist.linear.z + (dz_l * p_factor) ) )  > linearMaximum) 
+            ? throttle(goalTwist.linear.z, newTwist.linear.z)  
+            : dz_l;
 
         // Calculate angular velocity difference and threshold if too high.
         auto dz_r = goalTwist.angular.z - newTwist.angular.z;
-        if( ( fabs( ( currTwist.angular.z + (dz_r * p_factor) ) ) > angularMaximum) > angularMaximum)
-            ROS_WARN("hit angular max. throttling.");
 
-        dz_r = ( ( ( fabs(  currTwist.angular.z + (dz_r * p_factor)  ) > angularMaximum ) ) ? 0 : dz_r );
+        dz_r = ( ( fabs(  currTwist.angular.z + (dz_r * p_factor)  ) > angularMaximum ) ) 
+                ? throttle(goalTwist.angular.z, newTwist.angular.z) 
+                : dz_r ;
 
         currTwist.linear.x += dx_l * p_factor;
         currTwist.linear.y += dy_l * p_factor;
