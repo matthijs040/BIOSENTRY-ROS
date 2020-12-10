@@ -6,8 +6,10 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
+#include <math.h>
 
 #include "biosentry/AircraftFlightActions.h"
+#include "math_utils.h"
 
 /**
  * @brief enum corresponding to all FlightActions the DJI drone API can provide.
@@ -86,9 +88,17 @@ private:
     nav_msgs::Odometry latest_odom = nav_msgs::Odometry();
     CONTROLLER_STATE current_state = CONTROLLER_STATE::IDLE;
 
+    // Proportional factor value on the velocity difference.
     const double p_factor = 0.5;
+
+    // Steps of velocity change per keyboard button detection.
     const double linearIncrement = 0.05;
-    const double angularIncrement = 30;
+    const double angularIncrement = (2 * M_PI / 32);
+
+    // Maximum velocities of the DJI drone virtual stick controls:
+    // https://developer.dji.com/api-reference/android-api/Components/FlightController/DJIFlightController.html#djiflightcontroller_djivirtualstickrollpitchcontrolmode_inline
+    const double angularMaximum = (2* M_PI / 4);
+    const double linearMaximum = 3;
 
     bool canSendManualCommands = true;
 
@@ -115,6 +125,12 @@ private:
             state_checker.stop();
         }
     }
+
+    double throttle(double& val, double& oldVal)
+    {
+        val = oldVal;
+        return 0;
+    }
     
     /**
      * @brief Callback that gives the controller recent odometry information.
@@ -127,18 +143,42 @@ private:
         auto newTwist = msg->twist.twist;
         
         auto dx_l = goalTwist.linear.x - newTwist.linear.x;
+
+        dx_l = ( ( fabs( ( currTwist.linear.x + (dx_l * p_factor) ) ) > linearMaximum) ? 
+                    throttle(goalTwist.linear.x, newTwist.linear.x) : 
+                    dx_l );
+
         auto dy_l = goalTwist.linear.y - newTwist.linear.y;
+        if(fabs( ( currTwist.linear.y + (dy_l * p_factor) ) ) > linearMaximum)
+        {
+            ROS_WARN("hit Y max. Throttling");
+            dy_l = 0;
+            goalTwist.linear.y = newTwist.linear.y;
+        }
+
+
+        dy_l = ( ( fabs( ( currTwist.linear.y + (dy_l * p_factor) ) ) > linearMaximum) ? 0 : dy_l );
+
         auto dz_l = goalTwist.linear.z - newTwist.linear.z;
-        
+        if(fabs( ( currTwist.linear.z + (dz_l * p_factor) ) ) > linearMaximum )
+            ROS_WARN("hit Z max. Throttling");
+
+        dz_l = ( ( fabs( ( currTwist.linear.z + (dz_l * p_factor) ) )  > linearMaximum) ? 0 : dz_l);
+
+        // Calculate angular velocity difference and threshold if too high.
         auto dz_r = goalTwist.angular.z - newTwist.angular.z;
+        if( ( fabs( ( currTwist.angular.z + (dz_r * p_factor) ) ) > angularMaximum) > angularMaximum)
+            ROS_WARN("hit angular max. throttling.");
+
+        dz_r = ( ( ( fabs(  currTwist.angular.z + (dz_r * p_factor)  ) > angularMaximum ) ) ? 0 : dz_r );
 
         currTwist.linear.x += dx_l * p_factor;
         currTwist.linear.y += dy_l * p_factor;
         currTwist.linear.z += dz_l * p_factor;
 
         currTwist.angular.z += dz_r * p_factor;
-
-        //ROS_INFO("latest twist is: %f %f %f \n", currTwist.linear.x, currTwist.linear.y , currTwist.linear.z   );
+    
+        ROS_INFO("latest twist is: %f %f %f %f\n", currTwist.linear.x, currTwist.linear.y , currTwist.linear.z, currTwist.angular.z );
     }
 
 public:
@@ -253,7 +293,11 @@ public:
             goalTwist.linear.y -= linearIncrement;
             break;
         case FLIGHT_COMMAND::ROT_RIGHT:
-            goalTwist.angular.z += angularIncrement;       
+            goalTwist.angular.z += angularIncrement;
+            break;
+        case FLIGHT_COMMAND::ROT_LEFT:
+            goalTwist.angular.z -= angularIncrement;
+            break;
         default:
             break;
         }
@@ -261,7 +305,9 @@ public:
 
     void publishLatestSpeed()
     {
-        control_publisher.publish(currTwist);
+        if( current_state == CONTROLLER_STATE::ACTIVE ||
+            current_state == CONTROLLER_STATE::FLYING)
+        { control_publisher.publish(currTwist); }
     }
 };
 
